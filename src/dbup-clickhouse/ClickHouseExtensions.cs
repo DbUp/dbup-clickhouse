@@ -1,5 +1,5 @@
-using System;
 using DbUp.Builder;
+using DbUp.Engine.Transactions;
 
 namespace DbUp.ClickHouse;
 
@@ -8,16 +8,32 @@ namespace DbUp.ClickHouse;
 /// </summary>
 public static class ClickHouseExtensions
 {
-    /// <summary>
-    /// Creates an upgrader for ClickHouse databases.
-    /// </summary>
-    /// <param name="supportedDatabases">Fluent helper type.</param>
-    /// <param name="connectionString">ClickHouse database connection string.</param>
-    /// <returns>
-    /// A builder for a database upgrader designed for ClickHouse databases.
-    /// </returns>
-    public static UpgradeEngineBuilder ClickHouseDatabase(this SupportedDatabases supportedDatabases, string connectionString)
+    public static UpgradeEngineBuilder ClickHouseDatabase(this SupportedDatabases supported, string connectionString)
+        => ClickHouseDatabase(supported, connectionString, null);
+
+    public static UpgradeEngineBuilder ClickHouseDatabase(this SupportedDatabases supported, string connectionString, string database)
+        => ClickHouseDatabase(new ClickHouseConnectionManager(connectionString), database);
+
+    public static UpgradeEngineBuilder ClickHouseDatabase(this SupportedDatabases supported, IConnectionManager connectionManager)
+        => ClickHouseDatabase(connectionManager);
+
+    public static UpgradeEngineBuilder ClickHouseDatabase(IConnectionManager connectionManager)
+        => ClickHouseDatabase(connectionManager, null);
+
+    public static UpgradeEngineBuilder ClickHouseDatabase(IConnectionManager connectionManager, string schema)
     {
-        throw new NotImplementedException();
+        var builder = new UpgradeEngineBuilder();
+        builder.Configure(c => c.ConnectionManager = connectionManager);
+        builder.Configure(c => c.ScriptExecutor = new ClickHouseScriptExecutor(() => c.ConnectionManager, () => c.Log, schema, () => c.VariablesEnabled, c.ScriptPreprocessors, () => c.Journal));
+        builder.Configure(c => c.Journal = new ClickHouseJournal(() => c.ConnectionManager, () => c.Log, schema, "schemaversions"));
+        builder.WithPreprocessor(new ClickHousePreprocessor());
+        return builder;
+    }
+
+    public static UpgradeEngineBuilder JournalToClickHouseTable(this UpgradeEngineBuilder builder, string schema, string table)
+    {
+        builder.Configure(c => c.Journal = new ClickHouseJournal(() => c.ConnectionManager, () => c.Log, schema, table));
+        return builder;
     }
 }
+

@@ -1,0 +1,84 @@
+variables:
+  # Opt out of telemetry (turbo and others), see https://consoledonottrack.com/
+  DO_NOT_TRACK: 1
+  # Enable debug services
+  CI_DEBUG_SERVICES: "true"
+  # Enable service network
+  FF_NETWORK_PER_BUILD: "true"
+  # Nupkg folder
+  NUPKG_FOLDER: ".packages"
+  NUGET_SOURCE: https://nuget.rapidsoft.ru/nuget/Rapidsoft-Nuget/v3/index.json
+  NUGETORG_SOURCE: https://nuget.rapidsoft.ru/nuget/RapidSoft-NuGetORG/v3/index.json
+  GITHUB_SOURCE: https://nuget.pkg.github.com/DbUp/index.json
+  # All console output of dotnet should be in English
+  LANG: C
+  LCID: 1033
+  # Disable dotnet first time experience
+  DOTNET_NOLOGO: true
+  # Disable Husky in dotnet tools restore
+  HUSKY: 0
+
+stages:
+  - build
+  - test
+  - publish
+  - release
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_TAG'
+      when: never
+    - if: $CI_COMMIT_BRANCH
+      when: always
+
+include:
+  - component: $CI_SERVER_FQDN/open-source/ci-components/ultimate-auto-semversioning@0.1.3
+
+build:
+  image: mcr.microsoft.com/dotnet/sdk:9.0
+  stage: build
+  variables: 
+    PACKAGE_VERSION: ${GitVersion_LegacySemVer}
+  script:
+    - |
+      echo "Building version ${PACKAGE_VERSION}"
+      if [[ "${CI_SCRIPT_TRACE}" == "true" ]] || [[ -n "${CI_DEBUG_TRACE}" ]]; then
+        echo "Debugging enabled"
+        set -xv
+      fi 
+      dotnet nuget update source nuget.org -s "$NUGETORG_SOURCE"
+      dotnet nuget add source "$NUGET_SOURCE" --name nuget.rapidsoft.ru
+      dotnet nuget add source "$GITHUB_SOURCE" --name github --username shokurov --password $GITHUB_REPO_KEY --store-password-in-clear-text
+      
+      dotnet restore --packages .nuget/packages/ ./src/dbup-clickhouse.sln
+      dotnet build --no-restore --packages .nuget/packages/ -c Release -p:Version=$PACKAGE_VERSION ./src/dbup-clickhouse.sln
+      dotnet pack --no-build --no-restore -c Release -p:Version=$PACKAGE_VERSION -o $NUPKG_FOLDER --include-symbols --include-source ./src/dbup-clickhouse.sln
+  artifacts:
+    expire_in: 1 week  # to save gitlab server space, we copy the files we need to deploy folder later on
+    paths:
+      - "$NUPKG_FOLDER/"
+
+publish:internal:
+  image: mcr.microsoft.com/dotnet/sdk:9.0
+  stage: publish
+  variables:
+    PACKAGE_VERSION: ${GitVersion_LegacySemVer}
+  script:
+    - echo "Publishing version $PACKAGE_VERSION internally to $NUGET_SOURCE"
+    - dotnet nuget push "$NUPKG_FOLDER/*.nupkg" --source $NUGET_SOURCE --api-key $NUGET_API_KEY
+  needs:
+    - build
+  when: manual
+
+# Please see [Release CI/CD examples](https://docs.gitlab.com/ee/user/project/releases/release_cicd_examples.html) for many rich examples for triggering a release only on specific conditions.
+release_job:
+  stage: release
+  when: manual
+  image: registry.gitlab.com/gitlab-org/cli:latest
+  variables:
+    PACKAGE_VERSION: ${GitVersion_LegacySemVer}
+  script:
+    - echo "running release_job"
+  release:                               # See https://docs.gitlab.com/ee/ci/yaml/#release for available properties
+    tag_name: '$PACKAGE_VERSION'
+    description: '$PACKAGE_VERSION'
