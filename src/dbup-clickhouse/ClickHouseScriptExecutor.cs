@@ -14,6 +14,12 @@ public class ClickHouseScriptExecutor : ScriptExecutor
     /// <summary>
     /// Initializes an instance of the <see cref="ClickHouseScriptExecutor"/> class.
     /// </summary>
+    /// <param name="connectionManagerFactory"></param>
+    /// <param name="log">The logging mechanism.</param>
+    /// <param name="schema">The database that contains the table.</param>
+    /// <param name="variablesEnabled">Function that returns <c>true</c> if variables should be replaced, <c>false</c> otherwise.</param>
+    /// <param name="scriptPreprocessors">Script Preprocessors in addition to variable substitution</param>
+    /// <param name="journalFactory">Database journal</param>
     public ClickHouseScriptExecutor(
         Func<IConnectionManager> connectionManagerFactory,
         Func<IUpgradeLog> log,
@@ -25,9 +31,11 @@ public class ClickHouseScriptExecutor : ScriptExecutor
     {
     }
 
+    /// <inheritdoc/>
     protected override string GetVerifySchemaSql(string schema)
         => $"CREATE DATABASE IF NOT EXISTS {schema}";
 
+    /// <inheritdoc/>
     protected override void ExecuteCommandsWithinExceptionHandler(int index, SqlScript script, Action executeCommand)
     {
         try
