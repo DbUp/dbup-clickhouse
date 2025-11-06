@@ -18,7 +18,10 @@ public class ClickHouseQueryParserTests
         SELECT 2;
         """, 2,
         "SELECT 1",
-        "-- Line comment; with semicolon\r\nSELECT 2")]
+        """
+        -- Line comment; with semicolon
+        SELECT 2
+        """)]
     // ClickHouse parser now properly handles string literals - doesn't split on semicolon inside strings
     [InlineData("SELECT 'string with; semicolon'", 1, "SELECT 'string with; semicolon'")]
     // ClickHouse parser now properly handles quoted identifiers - doesn't split on semicolon inside quotes
