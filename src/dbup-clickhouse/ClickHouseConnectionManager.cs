@@ -12,7 +12,7 @@ namespace DbUp.ClickHouse;
 public class ClickHouseConnectionManager : DatabaseConnectionManager
 {
     /// <summary>
-    /// Creates a new ClickHouse database connection.
+    /// Initializes a new instance of the <see cref="ClickHouseConnectionManager"/> class.
     /// </summary>
     /// <param name="connectionString">The ClickHouse connection string.</param>
     public ClickHouseConnectionManager(string connectionString)
@@ -29,6 +29,7 @@ public class ClickHouseConnectionManager : DatabaseConnectionManager
     /// Splits the statements in the script using proper SQL parsing that handles comments and string literals.
     /// </summary>
     /// <param name="scriptContents">The contents of the script to split.</param>
+    /// <returns>A collection of individual SQL statements.</returns>
     public override IEnumerable<string> SplitScriptIntoCommands(string scriptContents)
     {
         var statements = ClickHouseQueryParser.ParseRawQuery(scriptContents);

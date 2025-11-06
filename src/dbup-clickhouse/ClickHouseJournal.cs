@@ -5,10 +5,18 @@ using DbUp.Support;
 namespace DbUp.ClickHouse;
 
 /// <summary>
-/// Tracks the list of executed scripts in a ClickHouse table.
+/// An implementation of the <see cref="Engine.IJournal"/> interface which tracks version numbers for a
+/// ClickHouse database using a table called schemaversions.
 /// </summary>
 public class ClickHouseJournal : TableJournal
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ClickHouseJournal"/> class.
+    /// </summary>
+    /// <param name="connectionManager">The connection manager.</param>
+    /// <param name="logger">The log.</param>
+    /// <param name="schema">The database that contains the table.</param>
+    /// <param name="tableName">The table name.</param>
     public ClickHouseJournal(
         System.Func<IConnectionManager> connectionManager,
         System.Func<IUpgradeLog> logger,
@@ -18,12 +26,15 @@ public class ClickHouseJournal : TableJournal
     {
     }
 
+    /// <inheritdoc/>
     protected override string GetInsertJournalEntrySql(string scriptName, string applied)
         => $"INSERT INTO {FqSchemaTableName} (ScriptName, Applied) VALUES ({scriptName}, {applied})";
 
+    /// <inheritdoc/>
     protected override string GetJournalEntriesSql()
         => $"SELECT ScriptName FROM {FqSchemaTableName} ORDER BY ScriptName";
 
+    /// <inheritdoc/>
     protected override string CreateSchemaTableSql(string quotedPrimaryKeyName)
         => $"""
             CREATE TABLE {FqSchemaTableName}
@@ -34,6 +45,8 @@ public class ClickHouseJournal : TableJournal
             ENGINE = MergeTree()
             ORDER BY (ScriptName)
             """;
+    
+    /// <inheritdoc/>
     protected override string DoesTableExistSql()
     {
         return string.IsNullOrEmpty(SchemaTableSchema)

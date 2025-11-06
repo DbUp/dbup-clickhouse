@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>DbUp makes it easy to deploy and upgrade databases. This package adds ClickHouse support.</Description>
@@ -12,6 +12,7 @@
     <PackageId>dbup-clickhouse</PackageId>
     <RepositoryUrl>https://github.com/DbUp/dbup-clickhouse.git</RepositoryUrl>
     <PackageIcon>dbup-icon.png</PackageIcon>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(CI)' == 'true'">
