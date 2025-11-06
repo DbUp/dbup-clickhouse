@@ -1,4 +1,4 @@
-﻿using DbUp.Tests.Common;
+using DbUp.Tests.Common;
 
 namespace DbUp.ClickHouse.Tests;
 

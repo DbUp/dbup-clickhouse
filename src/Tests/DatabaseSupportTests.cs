@@ -1,4 +1,4 @@
-﻿using DbUp.Builder;
+using DbUp.Builder;
 using DbUp.Tests.Common;
 
 namespace DbUp.ClickHouse.Tests;
@@ -15,6 +15,6 @@ public class DatabaseSupportTests : DatabaseSupportTestsBase
     protected override UpgradeEngineBuilder AddCustomNamedJournalToBuilder(UpgradeEngineBuilder builder, string schema, string tableName)
         => builder.JournalTo(
             (connectionManagerFactory, logFactory)
-                => new ClickHouseJournal(connectionManagerFactory, logFactory, tableName)
+                => new ClickHouseJournal(connectionManagerFactory, logFactory, schema, tableName)
         );
 }

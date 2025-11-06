@@ -1,23 +1,44 @@
-using System;
-using System.Data;
-using DbUp.Engine;
 using DbUp.Engine.Output;
 using DbUp.Engine.Transactions;
+using DbUp.Support;
 
 namespace DbUp.ClickHouse;
 
-public class ClickHouseJournal(
-// Remove pragma once implemented
-#pragma warning disable CS9113 // Parameter is unread.
-    Func<IConnectionManager> connectionManagerFactory,
-    Func<IUpgradeLog> logFactory,
-    string tableName
-#pragma warning restore CS9113 // Parameter is unread.
-    ) : IJournal
+/// <summary>
+/// Tracks the list of executed scripts in a ClickHouse table.
+/// </summary>
+public class ClickHouseJournal : TableJournal
 {
-    public string[] GetExecutedScripts() => throw new NotImplementedException();
+    public ClickHouseJournal(
+        System.Func<IConnectionManager> connectionManager,
+        System.Func<IUpgradeLog> logger,
+        string schema,
+        string tableName)
+        : base(connectionManager, logger, new ClickHouseObjectParser(), schema, tableName)
+    {
+    }
 
-    public void StoreExecutedScript(SqlScript script, Func<IDbCommand> dbCommandFactory) => throw new NotImplementedException();
+    protected override string GetInsertJournalEntrySql(string scriptName, string applied)
+        => $"INSERT INTO {FqSchemaTableName} (ScriptName, Applied) VALUES ({scriptName}, {applied})";
 
-    public void EnsureTableExistsAndIsLatestVersion(Func<IDbCommand> dbCommandFactory) => throw new NotImplementedException();
+    protected override string GetJournalEntriesSql()
+        => $"SELECT ScriptName FROM {FqSchemaTableName} ORDER BY ScriptName";
+
+    protected override string CreateSchemaTableSql(string quotedPrimaryKeyName)
+        => $"""
+            CREATE TABLE {FqSchemaTableName}
+            (
+                ScriptName String,
+                Applied DateTime
+            )
+            ENGINE = MergeTree()
+            ORDER BY (ScriptName)
+            """;
+    protected override string DoesTableExistSql()
+    {
+        return string.IsNullOrEmpty(SchemaTableSchema)
+            ? $"EXISTS TABLE {UnquotedSchemaTableName}"
+            : $"EXISTS TABLE `{SchemaTableSchema}`.`{UnquotedSchemaTableName}`";
+    }
 }
+

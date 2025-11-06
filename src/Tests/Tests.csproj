@@ -9,19 +9,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\dbup-clickhouse\dbup-clickhouse.csproj"/>
-    <PackageReference Include="DbUp.Tests.Common" Version="6.0.5" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageReference Include="ClickHouse.Driver" Version="0.7.20" />
+    <ProjectReference Include="..\dbup-clickhouse\dbup-clickhouse.csproj" />
+    <PackageReference Include="DbUp.Tests.Common" Version="6.0.15" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
+    <PackageReference Include="Testcontainers.ClickHouse" Version="4.8.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="3.0.2">
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="NSubstitute" Version="5.3.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="ApprovalFiles\*.cs"/>
-    <None Include="ApprovalFiles\*.cs"/>
+    <Compile Remove="ApprovalFiles\*.cs" />
+    <None Include="ApprovalFiles\*.cs" />
   </ItemGroup>
 
 </Project>

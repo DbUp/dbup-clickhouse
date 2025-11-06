@@ -10,6 +10,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_", "_", "{2BB18839-D96E-46
 		..\.gitignore = ..\.gitignore
 		..\license.txt = ..\license.txt
 		..\README.md = ..\README.md
+		.editorconfig = .editorconfig
+		..\.gitlab-ci.yml = ..\.gitlab-ci.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{62E5FE92-E288-4E09-964D-F92AF0E49131}"
@@ -22,8 +24,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{77157734-01DA-4AA3-A15C-504013343B29}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
-		dbup-clickhouse.sln.DotSettings = dbup-clickhouse.sln.DotSettings
-		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
 Global
