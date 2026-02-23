@@ -1,4 +1,4 @@
-﻿using Testcontainers.ClickHouse;
+using Testcontainers.ClickHouse;
 using Xunit;
 
 namespace DbUp.ClickHouse.Tests;
@@ -15,7 +15,7 @@ public class ClickHouseContainerFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         // Create and start a ClickHouse container
-        var container = new ClickHouseBuilder().WithDatabase("testdb")
+        var container = new ClickHouseBuilder("clickhouse/clickhouse-server:latest").WithDatabase("testdb")
             .Build();
 
         await container.StartAsync();
